@@ -1,0 +1,125 @@
+<?xml version="1.0" ?>
+<plugin-upgrade xmlns="http://www.urbancode.com/UpgradeXMLSchema_v1" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance">
+  <migrate to-version="3">
+    <migrate-command name="IDTES Authentication">
+      <migrate-properties>
+        <migrate-property default="${p:step/name}" name="stepID"/>
+      </migrate-properties>
+    </migrate-command>
+  </migrate>
+  <migrate to-version="4">
+     <migrate-command name="IDTES Authentication">
+        <remove-properties>
+            <remove-property name="stepID"/>
+        </remove-properties>
+     </migrate-command>
+    <migrate-command name="Create Environment from Template">
+      <migrate-properties>
+        <migrate-property default="" name="proxyHost"/>
+        <migrate-property default="" name="proxyPort"/>
+      </migrate-properties>
+    </migrate-command>
+    <migrate-command name="Change Environment State">
+      <migrate-properties>
+        <migrate-property default="" name="proxyHost"/>
+        <migrate-property default="" name="proxyPort"/>
+      </migrate-properties>
+    </migrate-command>
+    <migrate-command name="Change VM State">
+      <migrate-properties>
+        <migrate-property default="" name="proxyHost"/>
+        <migrate-property default="" name="proxyPort"/>
+      </migrate-properties>
+    </migrate-command>
+    <migrate-command name="Get VM ID">
+      <migrate-properties>
+        <migrate-property default="" name="proxyHost"/>
+        <migrate-property default="" name="proxyPort"/>
+      </migrate-properties>
+    </migrate-command>
+    <migrate-command name="Set VM User Data">
+      <migrate-properties>
+        <migrate-property default="" name="proxyHost"/>
+        <migrate-property default="" name="proxyPort"/>
+      </migrate-properties>
+    </migrate-command>
+    <migrate-command name="Connect to Network in another Environment (ICNR)">
+      <migrate-properties>
+        <migrate-property default="" name="proxyHost"/>
+        <migrate-property default="" name="proxyPort"/>
+      </migrate-properties>
+    </migrate-command>
+    <migrate-command name="Connect to VPN Tunnel">
+      <migrate-properties>
+        <migrate-property default="" name="proxyHost"/>
+        <migrate-property default="" name="proxyPort"/>
+      </migrate-properties>
+    </migrate-command>
+    <migrate-command name="Add Environment to Project">
+      <migrate-properties>
+        <migrate-property default="" name="proxyHost"/>
+        <migrate-property default="" name="proxyPort"/>
+      </migrate-properties>
+    </migrate-command>
+    <migrate-command name="Add Template to Project">
+      <migrate-properties>
+        <migrate-property default="" name="proxyHost"/>
+        <migrate-property default="" name="proxyPort"/>
+      </migrate-properties>
+    </migrate-command>
+    <migrate-command name="Create Template from Environment">
+      <migrate-properties>
+        <migrate-property default="" name="proxyHost"/>
+        <migrate-property default="" name="proxyPort"/>
+      </migrate-properties>
+    </migrate-command>
+    <migrate-command name="Delete Environment">
+      <migrate-properties>
+        <migrate-property default="" name="proxyHost"/>
+        <migrate-property default="" name="proxyPort"/>
+      </migrate-properties>
+    </migrate-command>
+    <migrate-command name="Delete VM from Environment">
+      <migrate-properties>
+        <migrate-property default="" name="proxyHost"/>
+        <migrate-property default="" name="proxyPort"/>
+      </migrate-properties>
+    </migrate-command>
+    <migrate-command name="Add Template to Environment">
+      <migrate-properties>
+        <migrate-property default="" name="proxyHost"/>
+        <migrate-property default="" name="proxyPort"/>
+      </migrate-properties>
+    </migrate-command>
+    <migrate-command name="Add VM from Template to Environment">
+      <migrate-properties>
+        <migrate-property default="" name="proxyHost"/>
+        <migrate-property default="" name="proxyPort"/>
+      </migrate-properties>
+    </migrate-command>
+    <migrate-command name="List Published URL for Environment">
+      <migrate-properties>
+        <migrate-property default="" name="proxyHost"/>
+        <migrate-property default="" name="proxyPort"/>
+      </migrate-properties>
+    </migrate-command>
+    <migrate-command name="Create Published URL for Environment">
+      <migrate-properties>
+        <migrate-property default="" name="proxyHost"/>
+        <migrate-property default="" name="proxyPort"/>
+      </migrate-properties>
+    </migrate-command>
+    <migrate-command name="Create Published Service for VM">
+      <migrate-properties>
+        <migrate-property default="" name="proxyHost"/>
+        <migrate-property default="" name="proxyPort"/>
+      </migrate-properties>
+    </migrate-command>
+    <migrate-command name="List Published Service for VM">
+      <migrate-properties>
+        <migrate-property default="" name="proxyHost"/>
+        <migrate-property default="" name="proxyPort"/>
+      </migrate-properties>
+    </migrate-command>
+  </migrate>
+</plugin-upgrade>

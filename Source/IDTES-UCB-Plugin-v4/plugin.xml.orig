@@ -1,0 +1,896 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<plugin xmlns="http://www.urbancode.com/PluginXMLSchema_v1" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance">
+  <header>
+    <identifier id="com.urbancode.air.plugin.idtes" name="IDTES Automation Pack for IBM UrbanCode Build" version="1"/>
+    <description>
+      The IBM Development and Test Environment Services (IDTES) Automation Pack for UrbanCode Build provides steps for creating IDTES environments and templates, running, stopping and suspending IDTES environments, connecting networks and other useful operations in IDTES.
+    </description>
+    <tag>Cloud/IDTES</tag>
+  </header>
+  <step-type name="IDTES Authentication">
+    <description>Establish Authentication Credentials for Subsequent IDTES Operations</description>
+    <properties>
+      <property name="username" required="true">
+        <property-ui type="textBox"
+                     label="Username"
+                     description="IDTES User ID."/>
+      </property>
+      <property name="password" required="true">
+        <property-ui type="secureBox"
+                     label="Authentication Key"
+                     description="IDTES Authentication Key."/>
+      </property>
+    </properties>
+    <post-processing><![CDATA[
+        if (properties.get("exitCode") != 0) {
+            properties.put(new java.lang.String("Status"), new java.lang.String("Failure"));
+        }
+        else {
+            properties.put("Status", "Success");
+        }
+     ]]></post-processing>
+    <command program="${GROOVY_HOME}/bin/groovy">
+      <arg value='-cp' />
+      <arg path='classes:${sdkJar}:lib/appengine-api-1.0-sdk-1.3.8.jar:lib/commons-beanutils-1.8.0.jar:lib/commons-codec-1.6.jar:lib/commons-collections-3.2.1.jar:lib/commons-lang-2.4.jar:lib/commons-logging-1.1.1.jar:lib/ezmorph-1.0.6.jar:lib/http-builder-0.7.jar:lib/httpclient-4.2.1.jar:lib/httpcore-4.2.1.jar:lib/json-lib-2.3-jdk15.jar:lib/nekohtml-1.9.16.jar:lib/signpost-commonshttp4-1.2.1.1.jar:lib/signpost-core-1.2.1.1.jar:lib/xercesImpl-2.9.1.jar:lib/xml-apis-1.4.01.jar:lib/xml-resolver-1.2.jar' />
+      <arg file="IDTESAuthentication.groovy"/>
+      <arg file="${PLUGIN_INPUT_PROPS}"/>
+      <arg file="${PLUGIN_OUTPUT_PROPS}"/>
+    </command>
+  </step-type>
+  <step-type name="Create Environment from Template">
+    <description>Create an IDTES Environment from a IDTES Template</description>
+    <properties>
+      <property name="templateID" required="true">
+        <property-ui type="textBox"
+                     label="Template ID"
+                     description="The numerical Template ID to use to Create an IDTES Environment."/>
+      </property>
+      <property name="configName">
+        <property-ui type="textBox"
+                     label="Environment Name"
+                     description="Optional new name for evironment"/>
+      </property>
+      <property name="username" required="true">
+        <property-ui type="textBox"
+                     label="Username"
+		     default-value="${p:IDTES Authentication/username}"
+                     description="IDTES User ID."/>
+      </property>
+      <property name="password" required="true">
+        <property-ui type="textBox"
+                     label="Authentication Key"
+		     default-value="${p:IDTES Authentication/password}"
+                     description="IDTES Authentication Key."/>
+      </property>
+    </properties>
+    <post-processing><![CDATA[
+        if (properties.get("exitCode") != 0) {
+            properties.put(new java.lang.String("Status"), new java.lang.String("Failure"));
+        }
+        else {
+            properties.put("Status", "Success");
+        }
+     ]]></post-processing>
+    <command program="${GROOVY_HOME}/bin/groovy">
+      <arg value='-cp' />
+      <arg path='classes:${sdkJar}:lib/appengine-api-1.0-sdk-1.3.8.jar:lib/commons-beanutils-1.8.0.jar:lib/commons-codec-1.6.jar:lib/commons-collections-3.2.1.jar:lib/commons-lang-2.4.jar:lib/commons-logging-1.1.1.jar:lib/ezmorph-1.0.6.jar:lib/http-builder-0.7.jar:lib/httpclient-4.2.1.jar:lib/httpcore-4.2.1.jar:lib/json-lib-2.3-jdk15.jar:lib/nekohtml-1.9.16.jar:lib/signpost-commonshttp4-1.2.1.1.jar:lib/signpost-core-1.2.1.1.jar:lib/xercesImpl-2.9.1.jar:lib/xml-apis-1.4.01.jar:lib/xml-resolver-1.2.jar' />
+      <arg file="createConfigFromTemplate.groovy"/>
+      <arg file="${PLUGIN_INPUT_PROPS}"/>
+      <arg file="${PLUGIN_OUTPUT_PROPS}"/>
+    </command>
+  </step-type>
+  <step-type name="Change Environment State">
+    <description>Run, Suspend or Stop an IDTES Environment</description>
+    <properties>
+      <property name="configID" required="true">
+        <property-ui type="textBox"
+                     label="Environment ID"
+		     default-value="${p:Create Environment from Template/configID}"
+                     description="The numerical Environment ID that you want to run, suspend or stop"/>
+      </property>
+      <property name="newState" required="true">
+        <property-ui type="selectBox"
+                     label="New Environment State"
+                     description="The desired new run-state of the environment - possible values are Running, Suspended or Shutdown"/>
+		<value label="Running">running</value>
+		<value label="Suspended">suspended</value>
+		<value label="Shutdown">stopped</value>
+      </property>
+      <property name="forceHalt">
+        <property-ui type="checkBox"
+                     label="Power off Environment if Shutdown Fails"
+                     description="Force halt if the the Environment fails to shutdown after 5 minutes"/>
+      </property>
+      <property name="username" required="true">
+        <property-ui type="textBox"
+                     label="Username"
+		     default-value="${p:IDTES Authentication/username}"
+                     description="IDTES User ID."/>
+      </property>
+      <property name="password" required="true">
+        <property-ui type="textBox"
+                     label="Authentication Key"
+		     default-value="${p:IDTES Authentication/password}"
+                     description="IDTES Authentication Key."/>
+      </property>
+    </properties>
+    <post-processing><![CDATA[
+        if (properties.get("exitCode") != 0) {
+            properties.put(new java.lang.String("Status"), new java.lang.String("Failure"));
+        }
+        else {
+            properties.put("Status", "Success");
+        }
+     ]]></post-processing>
+    <command program="${GROOVY_HOME}/bin/groovy">
+      <arg value='-cp' />
+      <arg path='classes:${sdkJar}:lib/appengine-api-1.0-sdk-1.3.8.jar:lib/commons-beanutils-1.8.0.jar:lib/commons-codec-1.6.jar:lib/commons-collections-3.2.1.jar:lib/commons-lang-2.4.jar:lib/commons-logging-1.1.1.jar:lib/ezmorph-1.0.6.jar:lib/http-builder-0.7.jar:lib/httpclient-4.2.1.jar:lib/httpcore-4.2.1.jar:lib/json-lib-2.3-jdk15.jar:lib/nekohtml-1.9.16.jar:lib/signpost-commonshttp4-1.2.1.1.jar:lib/signpost-core-1.2.1.1.jar:lib/xercesImpl-2.9.1.jar:lib/xml-apis-1.4.01.jar:lib/xml-resolver-1.2.jar' />
+      <arg file="changeConfigState.groovy"/>
+      <arg file="${PLUGIN_INPUT_PROPS}"/>
+      <arg file="${PLUGIN_OUTPUT_PROPS}"/>
+    </command>
+  </step-type>
+  <step-type name="Change VM State">
+    <description>Run, Suspend or Stop an individual VM in an IDTES Environment</description>
+    <properties>
+      <property name="configID" required="true">
+        <property-ui type="textBox"
+                     label="Environment ID"
+		     default-value="${p:Create Environment from Template/configID}"
+                     description="The numerical Environment ID that you want to run, suspend or stop"/>
+      </property>
+      <property name="vmName" required="true">
+        <property-ui type="textBox"
+		     default-value="${p:Add VM from Template to Environment/vmID}"
+                     label="VM Name or ID"
+                     description="The name or numerical ID of the VM that you want to run, suspend or stop."/>
+      </property>
+      <property name="newState" required="true">
+        <property-ui type="selectBox"
+                     label="New VM State"
+                     description="The desired new run-state of the VM - possible values are Running, Suspended or Shutdown"/>
+		<value label="Running">running</value>
+		<value label="Suspended">suspended</value>
+		<value label="Shutdown">stopped</value>
+      </property>
+      <property name="forceHalt">
+        <property-ui type="checkBox"
+                     label="Power off VM if Shutdown Fails"
+                     description="Force halt if the the VM fails to shutdown after 5 minutes"/>
+      </property>
+      <property name="username" required="true">
+        <property-ui type="textBox"
+                     label="Username"
+		     default-value="${p:IDTES Authentication/username}"
+                     description="IDTES User ID."/>
+      </property>
+      <property name="password" required="true">
+        <property-ui type="textBox"
+                     label="Authentication Key"
+		     default-value="${p:IDTES Authentication/password}"
+                     description="IDTES Authentication Key."/>
+      </property>
+    </properties>
+    <post-processing><![CDATA[
+        if (properties.get("exitCode") != 0) {
+            properties.put(new java.lang.String("Status"), new java.lang.String("Failure"));
+        }
+        else {
+            properties.put("Status", "Success");
+        }
+     ]]></post-processing>
+    <command program="${GROOVY_HOME}/bin/groovy">
+      <arg value='-cp' />
+      <arg path='classes:${sdkJar}:lib/appengine-api-1.0-sdk-1.3.8.jar:lib/commons-beanutils-1.8.0.jar:lib/commons-codec-1.6.jar:lib/commons-collections-3.2.1.jar:lib/commons-lang-2.4.jar:lib/commons-logging-1.1.1.jar:lib/ezmorph-1.0.6.jar:lib/http-builder-0.7.jar:lib/httpclient-4.2.1.jar:lib/httpcore-4.2.1.jar:lib/json-lib-2.3-jdk15.jar:lib/nekohtml-1.9.16.jar:lib/signpost-commonshttp4-1.2.1.1.jar:lib/signpost-core-1.2.1.1.jar:lib/xercesImpl-2.9.1.jar:lib/xml-apis-1.4.01.jar:lib/xml-resolver-1.2.jar' />
+      <arg file="changeVMState.groovy"/>
+      <arg file="${PLUGIN_INPUT_PROPS}"/>
+      <arg file="${PLUGIN_OUTPUT_PROPS}"/>
+    </command>
+  </step-type>
+  <step-type name="Get VM ID">
+    <description>Get the ID of the specified VM</description>
+    <properties>
+      <property name="configID" required="true">
+        <property-ui type="textBox"
+                     label="Environment ID"
+		     default-value="${p:Create Environment from Template/configID}"
+                     description="The numerical Environment ID containing the VM for which you want to get the ID"/>
+      </property>
+      <property name="VMName" required="true">
+        <property-ui type="textBox"
+                     label="VM Name"
+                     description="The Name of the Virtual Machine for which the you want to get the ID"/>
+      </property>
+      <property name="username" required="true">
+        <property-ui type="textBox"
+                     label="Username"
+		     default-value="${p:buildlife/username}"
+                     description="IDTES User ID."/>
+      </property>
+      <property name="password" required="true">
+        <property-ui type="textBox"
+                     label="Authentication Key"
+		     default-value="${p:buildlife/password}"
+                     description="IDTES Authentication Key."/>
+      </property>
+    </properties>
+    <post-processing><![CDATA[
+        if (properties.get("exitCode") != 0) {
+            properties.put(new java.lang.String("Status"), new java.lang.String("Failure"));
+        }
+        else {
+            properties.put("Status", "Success");
+        }
+     ]]></post-processing>
+    <command program="${GROOVY_HOME}/bin/groovy">
+      <arg value='-cp' />
+      <arg path='classes:${sdkJar}:lib/appengine-api-1.0-sdk-1.3.8.jar:lib/commons-beanutils-1.8.0.jar:lib/commons-codec-1.6.jar:lib/commons-collections-3.2.1.jar:lib/commons-lang-2.4.jar:lib/commons-logging-1.1.1.jar:lib/ezmorph-1.0.6.jar:lib/http-builder-0.7.jar:lib/httpclient-4.2.1.jar:lib/httpcore-4.2.1.jar:lib/json-lib-2.3-jdk15.jar:lib/nekohtml-1.9.16.jar:lib/signpost-commonshttp4-1.2.1.1.jar:lib/signpost-core-1.2.1.1.jar:lib/xercesImpl-2.9.1.jar:lib/xml-apis-1.4.01.jar:lib/xml-resolver-1.2.jar' />
+      <arg file="getVMID.groovy"/>
+      <arg file="${PLUGIN_INPUT_PROPS}"/>
+      <arg file="${PLUGIN_OUTPUT_PROPS}"/>
+    </command>
+  </step-type>
+  <step-type name="Set VM User Data">
+    <description>Set the User Data (IDTES Metadata Service) in a VM in a Config to the specified string</description>
+    <properties>
+      <property name="configID" required="true">
+        <property-ui type="textBox"
+                     label="Environment ID"
+		     default-value="${p:Create Environment from Template/configID}"
+                     description="The numerical Environment ID containing the VM for which the User Data is to be set"/>
+      </property>
+      <property name="VMName" required="true">
+        <property-ui type="textBox"
+                     label="VM Name"
+                     description="The Name of the Virtual Machine for which the User Data is to be set"/>
+      </property>
+      <property name="userDataString" required="true">
+        <property-ui type="textBox"
+                     label="User Data String"
+                     description="The string to which the VM User Data is to be set"/>
+      </property>
+      <property name="username" required="true">
+        <property-ui type="textBox"
+                     label="Username"
+		     default-value="${p:IDTES Authentication/username}"
+                     description="IDTES User ID."/>
+      </property>
+      <property name="password" required="true">
+        <property-ui type="textBox"
+                     label="Authentication Key"
+		     default-value="${p:IDTES Authentication/password}"
+                     description="IDTES Authentication Key."/>
+      </property>
+    </properties>
+    <post-processing><![CDATA[
+        if (properties.get("exitCode") != 0) {
+            properties.put(new java.lang.String("Status"), new java.lang.String("Failure"));
+        }
+        else {
+            properties.put("Status", "Success");
+        }
+     ]]></post-processing>
+    <command program="${GROOVY_HOME}/bin/groovy">
+      <arg value='-cp' />
+      <arg path='classes:${sdkJar}:lib/appengine-api-1.0-sdk-1.3.8.jar:lib/commons-beanutils-1.8.0.jar:lib/commons-codec-1.6.jar:lib/commons-collections-3.2.1.jar:lib/commons-lang-2.4.jar:lib/commons-logging-1.1.1.jar:lib/ezmorph-1.0.6.jar:lib/http-builder-0.7.jar:lib/httpclient-4.2.1.jar:lib/httpcore-4.2.1.jar:lib/json-lib-2.3-jdk15.jar:lib/nekohtml-1.9.16.jar:lib/signpost-commonshttp4-1.2.1.1.jar:lib/signpost-core-1.2.1.1.jar:lib/xercesImpl-2.9.1.jar:lib/xml-apis-1.4.01.jar:lib/xml-resolver-1.2.jar' />
+      <arg file="setVMUserData.groovy"/>
+      <arg file="${PLUGIN_INPUT_PROPS}"/>
+      <arg file="${PLUGIN_OUTPUT_PROPS}"/>
+    </command>
+  </step-type>
+  <step-type name="Connect to Network in another Environment (ICNR)">
+    <description>Connect Environment Networks using ICNR</description>
+    <properties>
+      <property name="sourceConfigID" required="true">
+        <property-ui type="textBox"
+                     label="Source Environment ID"
+                     description="The Source numerical Environment ID for the ICNR connection"/>
+      </property>
+      <property name="sourceNetName" required="true">
+        <property-ui type="textBox"
+                     label="Source Network Name"
+                     description="The Name of the Source Network for the ICNR connection"/>
+      </property>
+      <property name="targetConfigID" required="true">
+        <property-ui type="textBox"
+                     label="Target Environment ID"
+		     default-value="${p:Create Environment from Template/configID}"
+                     description="The Target numerical Environment ID for the ICNR connection"/>
+      </property>
+      <property name="targetNetName" required="true">
+        <property-ui type="textBox"
+                     label="Target Network Name"
+                     description="The Name of the Target Network for the ICNR connection"/>
+      </property>
+      <property name="username" required="true">
+        <property-ui type="textBox"
+                     label="Username"
+		     default-value="${p:IDTES Authentication/username}"
+                     description="IDTES User ID."/>
+      </property>
+      <property name="password" required="true">
+        <property-ui type="textBox"
+                     label="Authentication Key"
+		     default-value="${p:IDTES Authentication/password}"
+                     description="IDTES Authentication Key."/>
+      </property>
+    </properties>
+    <post-processing><![CDATA[
+        if (properties.get("exitCode") != 0) {
+            properties.put(new java.lang.String("Status"), new java.lang.String("Failure"));
+        }
+        else {
+            properties.put("Status", "Success");
+        }
+     ]]></post-processing>
+    <command program="${GROOVY_HOME}/bin/groovy">
+      <arg value='-cp' />
+      <arg path='classes:${sdkJar}:lib/appengine-api-1.0-sdk-1.3.8.jar:lib/commons-beanutils-1.8.0.jar:lib/commons-codec-1.6.jar:lib/commons-collections-3.2.1.jar:lib/commons-lang-2.4.jar:lib/commons-logging-1.1.1.jar:lib/ezmorph-1.0.6.jar:lib/http-builder-0.7.jar:lib/httpclient-4.2.1.jar:lib/httpcore-4.2.1.jar:lib/json-lib-2.3-jdk15.jar:lib/nekohtml-1.9.16.jar:lib/signpost-commonshttp4-1.2.1.1.jar:lib/signpost-core-1.2.1.1.jar:lib/xercesImpl-2.9.1.jar:lib/xml-apis-1.4.01.jar:lib/xml-resolver-1.2.jar' />
+      <arg file="connectICNR.groovy"/>
+      <arg file="${PLUGIN_INPUT_PROPS}"/>
+      <arg file="${PLUGIN_OUTPUT_PROPS}"/>
+    </command>
+  </step-type>
+  <step-type name="Connect to VPN Tunnel">
+    <description>Connect Environment Network to a VPN Tunnel</description>
+    <properties>
+      <property name="configID" required="true">
+        <property-ui type="textBox"
+                     label="Environment ID"
+		     default-value="${p:Create Environment from Template/configID}"
+                     description="The numerical Environment ID of the IDTES environment which is to be connected to the VPN Tunnel"/>
+      </property>
+      <property name="netName" required="true">
+        <property-ui type="textBox"
+                     label="Network Name"
+                     description="The Name of the Network that is to be connected to the VPN tunnel"/>
+      </property>
+      <property name="vpnID" required="true">
+        <property-ui type="textBox"
+                     label="VPN ID"
+                     description="The ID of the VPN to which the environment is to be connected (e.g. vpn-12345)"/>
+      </property>
+      <property name="username" required="true">
+        <property-ui type="textBox"
+                     label="Username"
+		     default-value="${p:IDTES Authentication/username}"
+                     description="IDTES User ID."/>
+      </property>
+      <property name="password" required="true">
+        <property-ui type="textBox"
+                     label="Authentication Key"
+		     default-value="${p:IDTES Authentication/password}"
+                     description="IDTES Authentication Key."/>
+      </property>
+    </properties>
+    <post-processing><![CDATA[
+        if (properties.get("exitCode") != 0) {
+            properties.put(new java.lang.String("Status"), new java.lang.String("Failure"));
+        }
+        else {
+            properties.put("Status", "Success");
+        }
+     ]]></post-processing>
+    <command program="${GROOVY_HOME}/bin/groovy">
+      <arg value='-cp' />
+      <arg path='classes:${sdkJar}:lib/appengine-api-1.0-sdk-1.3.8.jar:lib/commons-beanutils-1.8.0.jar:lib/commons-codec-1.6.jar:lib/commons-collections-3.2.1.jar:lib/commons-lang-2.4.jar:lib/commons-logging-1.1.1.jar:lib/ezmorph-1.0.6.jar:lib/http-builder-0.7.jar:lib/httpclient-4.2.1.jar:lib/httpcore-4.2.1.jar:lib/json-lib-2.3-jdk15.jar:lib/nekohtml-1.9.16.jar:lib/signpost-commonshttp4-1.2.1.1.jar:lib/signpost-core-1.2.1.1.jar:lib/xercesImpl-2.9.1.jar:lib/xml-apis-1.4.01.jar:lib/xml-resolver-1.2.jar' />
+      <arg file="connectVPN.groovy"/>
+      <arg file="${PLUGIN_INPUT_PROPS}"/>
+      <arg file="${PLUGIN_OUTPUT_PROPS}"/>
+    </command>
+  </step-type>
+  <step-type name="Add Environment to Project">
+    <description>Add a Environment to a Project</description>
+    <properties>
+      <property name="configID" required="true">
+        <property-ui type="textBox"
+                     label="Environment ID"
+		     default-value="${p:Create Environment from Template/configID}"
+                     description="The numerical Environment ID of the IDTES environment which is to be added to an IDTES Project"/>
+      </property>
+      <property name="projectName" required="true">
+        <property-ui type="textBox"
+                     label="Project Name"
+                     description="The Name of the Project to which the Environment is to be added"/>
+      </property>
+      <property name="username" required="true">
+        <property-ui type="textBox"
+                     label="Username"
+		     default-value="${p:IDTES Authentication/username}"
+                     description="IDTES User ID."/>
+      </property>
+      <property name="password" required="true">
+        <property-ui type="textBox"
+                     label="Authentication Key"
+		     default-value="${p:IDTES Authentication/password}"
+                     description="IDTES Authentication Key."/>
+      </property>
+    </properties>
+    <post-processing><![CDATA[
+        if (properties.get("exitCode") != 0) {
+            properties.put(new java.lang.String("Status"), new java.lang.String("Failure"));
+        }
+        else {
+            properties.put("Status", "Success");
+        }
+     ]]></post-processing>
+    <command program="${GROOVY_HOME}/bin/groovy">
+      <arg value='-cp' />
+      <arg path='classes:${sdkJar}:lib/appengine-api-1.0-sdk-1.3.8.jar:lib/commons-beanutils-1.8.0.jar:lib/commons-codec-1.6.jar:lib/commons-collections-3.2.1.jar:lib/commons-lang-2.4.jar:lib/commons-logging-1.1.1.jar:lib/ezmorph-1.0.6.jar:lib/http-builder-0.7.jar:lib/httpclient-4.2.1.jar:lib/httpcore-4.2.1.jar:lib/json-lib-2.3-jdk15.jar:lib/nekohtml-1.9.16.jar:lib/signpost-commonshttp4-1.2.1.1.jar:lib/signpost-core-1.2.1.1.jar:lib/xercesImpl-2.9.1.jar:lib/xml-apis-1.4.01.jar:lib/xml-resolver-1.2.jar' />
+      <arg file="addConfigToProject.groovy"/>
+      <arg file="${PLUGIN_INPUT_PROPS}"/>
+      <arg file="${PLUGIN_OUTPUT_PROPS}"/>
+    </command>
+  </step-type>
+  <step-type name="Add Template to Project">
+    <description>Add a Template to a Project</description>
+    <properties>
+      <property name="templateID" required="true">
+        <property-ui type="textBox"
+                     label="Template ID"
+		     default-value="${p:Create Template from Environment/templateID}"
+                     description="The numerical Template ID of the IDTES template which is to be added to an IDTES Project"/>
+      </property>
+      <property name="projectName" required="true">
+        <property-ui type="textBox"
+                     label="Project Name"
+                     description="The Name of the Project to which the Template is to be added"/>
+      </property>
+      <property name="username" required="true">
+        <property-ui type="textBox"
+                     label="Username"
+		     default-value="${p:IDTES Authentication/username}"
+                     description="IDTES User ID."/>
+      </property>
+      <property name="password" required="true">
+        <property-ui type="textBox"
+                     label="Authentication Key"
+		     default-value="${p:IDTES Authentication/password}"
+                     description="IDTES Authentication Key."/>
+      </property>
+    </properties>
+    <post-processing><![CDATA[
+        if (properties.get("exitCode") != 0) {
+            properties.put(new java.lang.String("Status"), new java.lang.String("Failure"));
+        }
+        else {
+            properties.put("Status", "Success");
+        }
+     ]]></post-processing>
+    <command program="${GROOVY_HOME}/bin/groovy">
+      <arg value='-cp' />
+      <arg path='classes:${sdkJar}:lib/appengine-api-1.0-sdk-1.3.8.jar:lib/commons-beanutils-1.8.0.jar:lib/commons-codec-1.6.jar:lib/commons-collections-3.2.1.jar:lib/commons-lang-2.4.jar:lib/commons-logging-1.1.1.jar:lib/ezmorph-1.0.6.jar:lib/http-builder-0.7.jar:lib/httpclient-4.2.1.jar:lib/httpcore-4.2.1.jar:lib/json-lib-2.3-jdk15.jar:lib/nekohtml-1.9.16.jar:lib/signpost-commonshttp4-1.2.1.1.jar:lib/signpost-core-1.2.1.1.jar:lib/xercesImpl-2.9.1.jar:lib/xml-apis-1.4.01.jar:lib/xml-resolver-1.2.jar' />
+      <arg file="addTemplateToProject.groovy"/>
+      <arg file="${PLUGIN_INPUT_PROPS}"/>
+      <arg file="${PLUGIN_OUTPUT_PROPS}"/>
+    </command>
+  </step-type>
+  <step-type name="Create Template from Environment">
+    <description>Create an IDTES Template from an IDTES Environment</description>
+    <properties>
+      <property name="configID" required="true">
+        <property-ui type="textBox"
+                     label="Environment ID"
+		     default-value="${p:Create Environment from Template/configID}"
+                     description="The numerical Environment ID to use to Create a IDTES Template."/>
+      </property>
+      <property name="templateName">
+        <property-ui type="textBox"
+                     label="Template Name"
+                     description="Optional new name for template"/>
+      </property>
+      <property name="username" required="true">
+        <property-ui type="textBox"
+                     label="Username"
+		     default-value="${p:IDTES Authentication/username}"
+                     description="IDTES User ID."/>
+      </property>
+      <property name="password" required="true">
+        <property-ui type="textBox"
+                     label="Authentication Key"
+		     default-value="${p:IDTES Authentication/password}"
+                     description="IDTES Authentication Key."/>
+      </property>
+    </properties>
+    <post-processing><![CDATA[
+        if (properties.get("exitCode") != 0) {
+            properties.put(new java.lang.String("Status"), new java.lang.String("Failure"));
+        }
+        else {
+            properties.put("Status", "Success");
+        }
+     ]]></post-processing>
+    <command program="${GROOVY_HOME}/bin/groovy">
+      <arg value='-cp' />
+      <arg path='classes:${sdkJar}:lib/appengine-api-1.0-sdk-1.3.8.jar:lib/commons-beanutils-1.8.0.jar:lib/commons-codec-1.6.jar:lib/commons-collections-3.2.1.jar:lib/commons-lang-2.4.jar:lib/commons-logging-1.1.1.jar:lib/ezmorph-1.0.6.jar:lib/http-builder-0.7.jar:lib/httpclient-4.2.1.jar:lib/httpcore-4.2.1.jar:lib/json-lib-2.3-jdk15.jar:lib/nekohtml-1.9.16.jar:lib/signpost-commonshttp4-1.2.1.1.jar:lib/signpost-core-1.2.1.1.jar:lib/xercesImpl-2.9.1.jar:lib/xml-apis-1.4.01.jar:lib/xml-resolver-1.2.jar' />
+      <arg file="createTemplateFromConfig.groovy"/>
+      <arg file="${PLUGIN_INPUT_PROPS}"/>
+      <arg file="${PLUGIN_OUTPUT_PROPS}"/>
+    </command>
+  </step-type>
+  <step-type name="Delete Environment">
+    <description>Delete an IDTES Environment</description>
+    <properties>
+      <property name="configID" required="true">
+        <property-ui type="textBox"
+                     label="Environment ID"
+		     default-value="${p:Create Environment from Template/configID}"
+                     description="The numerical ID of the IDTES Environment to Delete."/>
+      </property>
+      <property name="username" required="true">
+        <property-ui type="textBox"
+                     label="Username"
+		     default-value="${p:IDTES Authentication/username}"
+                     description="IDTES User ID."/>
+      </property>
+      <property name="password" required="true">
+        <property-ui type="textBox"
+                     label="Authentication Key"
+		     default-value="${p:IDTES Authentication/password}"
+                     description="IDTES Authentication Key."/>
+      </property>
+    </properties>
+    <post-processing><![CDATA[
+        if (properties.get("exitCode") != 0) {
+            properties.put(new java.lang.String("Status"), new java.lang.String("Failure"));
+        }
+        else {
+            properties.put("Status", "Success");
+        }
+     ]]></post-processing>
+    <command program="${GROOVY_HOME}/bin/groovy">
+      <arg value='-cp' />
+      <arg path='classes:${sdkJar}:lib/appengine-api-1.0-sdk-1.3.8.jar:lib/commons-beanutils-1.8.0.jar:lib/commons-codec-1.6.jar:lib/commons-collections-3.2.1.jar:lib/commons-lang-2.4.jar:lib/commons-logging-1.1.1.jar:lib/ezmorph-1.0.6.jar:lib/http-builder-0.7.jar:lib/httpclient-4.2.1.jar:lib/httpcore-4.2.1.jar:lib/json-lib-2.3-jdk15.jar:lib/nekohtml-1.9.16.jar:lib/signpost-commonshttp4-1.2.1.1.jar:lib/signpost-core-1.2.1.1.jar:lib/xercesImpl-2.9.1.jar:lib/xml-apis-1.4.01.jar:lib/xml-resolver-1.2.jar' />
+      <arg file="deleteConfig.groovy"/>
+      <arg file="${PLUGIN_INPUT_PROPS}"/>
+      <arg file="${PLUGIN_OUTPUT_PROPS}"/>
+    </command>
+  </step-type>
+  <step-type name="Delete VM from Environment">
+    <description>Delete the specified VM from an IDTES Environment</description>
+    <properties>
+      <property name="configID" required="true">
+        <property-ui type="textBox"
+                     label="Environment ID"
+		     default-value="${p:Create Environment from Template/configID}"
+                     description="The numerical ID of the IDTES Environment containing the VM that is to be Deleted."/>
+      </property>
+      <property name="vmName" required="true">
+        <property-ui type="textBox"
+                     label="VM Name or ID"
+		     default-value="${p:Add VM from Template to Environment/vmID}"
+                     description="The Name or numerical ID of the IDTES VM to delete from the specified environment."/>
+      </property>
+      <property name="username" required="true">
+        <property-ui type="textBox"
+                     label="Username"
+		     default-value="${p:IDTES Authentication/username}"
+                     description="IDTES User ID."/>
+      </property>
+      <property name="password" required="true">
+        <property-ui type="textBox"
+                     label="Authentication Key"
+		     default-value="${p:IDTES Authentication/password}"
+                     description="IDTES Authentication Key."/>
+      </property>
+    </properties>
+    <post-processing><![CDATA[
+        if (properties.get("exitCode") != 0) {
+            properties.put(new java.lang.String("Status"), new java.lang.String("Failure"));
+        }
+        else {
+            properties.put("Status", "Success");
+        }
+     ]]></post-processing>
+    <command program="${GROOVY_HOME}/bin/groovy">
+      <arg value='-cp' />
+      <arg path='classes:${sdkJar}:lib/appengine-api-1.0-sdk-1.3.8.jar:lib/commons-beanutils-1.8.0.jar:lib/commons-codec-1.6.jar:lib/commons-collections-3.2.1.jar:lib/commons-lang-2.4.jar:lib/commons-logging-1.1.1.jar:lib/ezmorph-1.0.6.jar:lib/http-builder-0.7.jar:lib/httpclient-4.2.1.jar:lib/httpcore-4.2.1.jar:lib/json-lib-2.3-jdk15.jar:lib/nekohtml-1.9.16.jar:lib/signpost-commonshttp4-1.2.1.1.jar:lib/signpost-core-1.2.1.1.jar:lib/xercesImpl-2.9.1.jar:lib/xml-apis-1.4.01.jar:lib/xml-resolver-1.2.jar' />
+      <arg file="deleteVM.groovy"/>
+      <arg file="${PLUGIN_INPUT_PROPS}"/>
+      <arg file="${PLUGIN_OUTPUT_PROPS}"/>
+    </command>
+  </step-type>
+  <step-type name="Add Template to Environment">
+    <description>Add the contents of an IDTES template to an IDTES environment</description>
+    <properties>
+      <property name="templateID" required="true">
+        <property-ui type="textBox"
+                     label="Template ID"
+		     default-value="${p:Create Template from Environment/templateID}"
+                     description="The numerical Template ID of the IDTES template that is to be added to the contents of the environment"/>
+      </property>
+      <property name="configID" required="true">
+        <property-ui type="textBox"
+                     label="Environment ID"
+		     default-value="${p:Create Environment from Template/configID}"
+                     description="The numerical Environment ID of the IDTES environment to which the contents of the template is to be added"/>
+      </property>
+      <property name="username" required="true">
+        <property-ui type="textBox"
+                     label="Username"
+		     default-value="${p:IDTES Authentication/username}"
+                     description="IDTES User ID."/>
+      </property>
+      <property name="password" required="true">
+        <property-ui type="textBox"
+                     label="Authentication Key"
+		     default-value="${p:IDTES Authentication/password}"
+                     description="IDTES Authentication Key."/>
+      </property>
+    </properties>
+    <post-processing><![CDATA[
+        if (properties.get("exitCode") != 0) {
+            properties.put(new java.lang.String("Status"), new java.lang.String("Failure"));
+        }
+        else {
+            properties.put("Status", "Success");
+        }
+     ]]></post-processing>
+    <command program="${GROOVY_HOME}/bin/groovy">
+      <arg value='-cp' />
+      <arg path='classes:${sdkJar}:lib/appengine-api-1.0-sdk-1.3.8.jar:lib/commons-beanutils-1.8.0.jar:lib/commons-codec-1.6.jar:lib/commons-collections-3.2.1.jar:lib/commons-lang-2.4.jar:lib/commons-logging-1.1.1.jar:lib/ezmorph-1.0.6.jar:lib/http-builder-0.7.jar:lib/httpclient-4.2.1.jar:lib/httpcore-4.2.1.jar:lib/json-lib-2.3-jdk15.jar:lib/nekohtml-1.9.16.jar:lib/signpost-commonshttp4-1.2.1.1.jar:lib/signpost-core-1.2.1.1.jar:lib/xercesImpl-2.9.1.jar:lib/xml-apis-1.4.01.jar:lib/xml-resolver-1.2.jar' />
+      <arg file="addTemplateToConfiguration.groovy"/>
+      <arg file="${PLUGIN_INPUT_PROPS}"/>
+      <arg file="${PLUGIN_OUTPUT_PROPS}"/>
+    </command>
+  </step-type>
+  <step-type name="Add VM from Template to Environment">
+    <description>Add the specified VM from an IDTES template to an IDTES environment</description>
+    <properties>
+      <property name="templateID" required="true">
+        <property-ui type="textBox"
+                     label="Template ID"
+		     default-value="${p:Create Template from Environment/templateID}"
+                     description="The numerical Template ID of the IDTES template that is to be added to the contents of the environment"/>
+      </property>
+      <property name="vmName" required="true">
+        <property-ui type="textBox"
+                     label="VM name or ID"
+                     description="The name or numerical ID of the VM contained in the specified template that is to be added to the contents of the environment"/>
+      </property>
+      <property name="newVMName">
+        <property-ui type="textBox"
+                     label="New VM Name"
+                     description="A new name to assign to the VM after it has been added to the specified environment.  If no name is specified, the name will remain as it was in the source Template"/>
+      </property>
+      <property name="configID" required="true">
+        <property-ui type="textBox"
+                     label="Environment ID"
+		     default-value="${p:Create Environment from Template/configID}"
+                     description="The numerical Environment ID of the IDTES environment to which the contents of the template is to be added"/>
+      </property>
+      <property name="username" required="true">
+        <property-ui type="textBox"
+                     label="Username"
+		     default-value="${p:IDTES Authentication/username}"
+                     description="IDTES User ID."/>
+      </property>
+      <property name="password" required="true">
+        <property-ui type="textBox"
+                     label="Authentication Key"
+		     default-value="${p:IDTES Authentication/password}"
+                     description="IDTES Authentication Key."/>
+      </property>
+    </properties>
+    <post-processing><![CDATA[
+        if (properties.get("exitCode") != 0) {
+            properties.put(new java.lang.String("Status"), new java.lang.String("Failure"));
+        }
+        else {
+            properties.put("Status", "Success");
+        }
+     ]]></post-processing>
+    <command program="${GROOVY_HOME}/bin/groovy">
+      <arg value='-cp' />
+      <arg path='classes:${sdkJar}:lib/appengine-api-1.0-sdk-1.3.8.jar:lib/commons-beanutils-1.8.0.jar:lib/commons-codec-1.6.jar:lib/commons-collections-3.2.1.jar:lib/commons-lang-2.4.jar:lib/commons-logging-1.1.1.jar:lib/ezmorph-1.0.6.jar:lib/http-builder-0.7.jar:lib/httpclient-4.2.1.jar:lib/httpcore-4.2.1.jar:lib/json-lib-2.3-jdk15.jar:lib/nekohtml-1.9.16.jar:lib/signpost-commonshttp4-1.2.1.1.jar:lib/signpost-core-1.2.1.1.jar:lib/xercesImpl-2.9.1.jar:lib/xml-apis-1.4.01.jar:lib/xml-resolver-1.2.jar' />
+      <arg file="addVMtoEnvironment.groovy"/>
+      <arg file="${PLUGIN_INPUT_PROPS}"/>
+      <arg file="${PLUGIN_OUTPUT_PROPS}"/>
+    </command>
+  </step-type>
+  <step-type name="List Published URL for Environment">
+    <description>List the Named Desktops Published URL for the Specified Environment</description>
+    <properties>
+      <property name="configID" required="true">
+        <property-ui type="textBox"
+                     label="Environment ID"
+		     default-value="${p:Create Environment from Template/configID}"
+                     description="The numerical Environment ID of the IDTES environment that contains the named Desktops Published URL"/>
+      </property>
+      <property name="urlName" required="true">
+        <property-ui type="textBox"
+                     label="Published URL Name"
+                     description="The Name of the Published URL"/>
+      </property>
+      <property name="username" required="true">
+        <property-ui type="textBox"
+                     label="Username"
+		     default-value="${p:IDTES Authentication/username}"
+                     description="IDTES User ID."/>
+      </property>
+      <property name="password" required="true">
+        <property-ui type="textBox"
+                     label="Authentication Key"
+		     default-value="${p:IDTES Authentication/password}"
+                     description="IDTES Authentication Key."/>
+      </property>
+    </properties>
+    <post-processing><![CDATA[
+        if (properties.get("exitCode") != 0) {
+            properties.put(new java.lang.String("Status"), new java.lang.String("Failure"));
+        }
+        else {
+            properties.put("Status", "Success");
+        }
+     ]]></post-processing>
+    <command program="${GROOVY_HOME}/bin/groovy">
+      <arg value='-cp' />
+      <arg path='classes:${sdkJar}:lib/appengine-api-1.0-sdk-1.3.8.jar:lib/commons-beanutils-1.8.0.jar:lib/commons-codec-1.6.jar:lib/commons-collections-3.2.1.jar:lib/commons-lang-2.4.jar:lib/commons-logging-1.1.1.jar:lib/ezmorph-1.0.6.jar:lib/http-builder-0.7.jar:lib/httpclient-4.2.1.jar:lib/httpcore-4.2.1.jar:lib/json-lib-2.3-jdk15.jar:lib/nekohtml-1.9.16.jar:lib/signpost-commonshttp4-1.2.1.1.jar:lib/signpost-core-1.2.1.1.jar:lib/xercesImpl-2.9.1.jar:lib/xml-apis-1.4.01.jar:lib/xml-resolver-1.2.jar' />
+      <arg file="listConfigPublishedURL.groovy"/>
+      <arg file="${PLUGIN_INPUT_PROPS}"/>
+      <arg file="${PLUGIN_OUTPUT_PROPS}"/>
+    </command>
+  </step-type>
+  <step-type name="Create Published URL for Environment">
+    <description>Create a Named Desktops Published URL for the Specified Environment</description>
+    <properties>
+      <property name="configID" required="true">
+        <property-ui type="textBox"
+                     label="Environment ID"
+		     default-value="${p:Create Environment from Template/configID}"
+                     description="The numerical Environment ID of the IDTES environment that contains the named Desktops Published URL"/>
+      </property>
+      <property name="publishSetName" required="true">
+        <property-ui type="textBox"
+                     label="Published URL Name"
+                     description="The Name of the Published URL"/>
+      </property>
+      <property name="urlPermissions">
+        <property-ui type="selectBox"
+                     label="Published URL Permissions"
+                     description="The Permitted Use for the Published URL"/>
+		     <value label="View Only">view_only</value>
+		     <value label="Use">use</value>
+		     <value label="Full Control">run_and_use</value>
+      </property>
+      <property name="urlPassword">
+        <property-ui type="secureBox"
+                     label="Published URL Password"
+                     description="The Optional Password for the Published URL"/>
+      </property>
+      <property name="username" required="true">
+        <property-ui type="textBox"
+                     label="Username"
+		     default-value="${p:IDTES Authentication/username}"
+                     description="IDTES User ID."/>
+      </property>
+      <property name="password" required="true">
+        <property-ui type="textBox"
+                     label="Authentication Key"
+		     default-value="${p:IDTES Authentication/password}"
+                     description="IDTES Authentication Key."/>
+      </property>
+    </properties>
+    <post-processing><![CDATA[
+        if (properties.get("exitCode") != 0) {
+            properties.put(new java.lang.String("Status"), new java.lang.String("Failure"));
+        }
+        else {
+            properties.put("Status", "Success");
+        }
+     ]]></post-processing>
+    <command program="${GROOVY_HOME}/bin/groovy">
+      <arg value='-cp' />
+      <arg path='classes:${sdkJar}:lib/appengine-api-1.0-sdk-1.3.8.jar:lib/commons-beanutils-1.8.0.jar:lib/commons-codec-1.6.jar:lib/commons-collections-3.2.1.jar:lib/commons-lang-2.4.jar:lib/commons-logging-1.1.1.jar:lib/ezmorph-1.0.6.jar:lib/http-builder-0.7.jar:lib/httpclient-4.2.1.jar:lib/httpcore-4.2.1.jar:lib/json-lib-2.3-jdk15.jar:lib/nekohtml-1.9.16.jar:lib/signpost-commonshttp4-1.2.1.1.jar:lib/signpost-core-1.2.1.1.jar:lib/xercesImpl-2.9.1.jar:lib/xml-apis-1.4.01.jar:lib/xml-resolver-1.2.jar' />
+      <arg file="createPublishedURL.groovy"/>
+      <arg file="${PLUGIN_INPUT_PROPS}"/>
+      <arg file="${PLUGIN_OUTPUT_PROPS}"/>
+    </command>
+  </step-type>
+  <step-type name="Create Published Service for VM">
+    <description>Create a Published Service for the Specified VM</description>
+    <properties>
+      <property name="configID" required="true">
+        <property-ui type="textBox"
+                     label="Environment ID"
+		     default-value="${p:Create Environment from Template/configID}"
+                     description="The numerical Environment ID of the IDTES environment that contains the named Desktops Published URL"/>
+      </property>
+      <property name="vmName" required="true">
+        <property-ui type="textBox"
+                     label="VM Name"
+                     description="The Name of the VM in the IDTES environment for which the Published Service is to be created"/>
+      </property>
+      <property name="networkName" required="true">
+        <property-ui type="textBox"
+                     label="Network Name"
+                     description="The Name of the Network in the Specified VM that is to be associated with the Published Service"/>
+      </property>
+      <property name="portNumber" required="true">
+        <property-ui type="textBox"
+                     label="Port Number"
+                     description="The Port that is to be assocated with the Published Service"/>
+      </property>
+      <property name="username" required="true">
+        <property-ui type="textBox"
+                     label="Username"
+		     default-value="${p:IDTES Authentication/username}"
+                     description="IDTES User ID."/>
+      </property>
+      <property name="password" required="true">
+        <property-ui type="textBox"
+                     label="Authentication Key"
+		     default-value="${p:IDTES Authentication/password}"
+                     description="IDTES Authentication Key."/>
+      </property>
+    </properties>
+    <post-processing><![CDATA[
+        if (properties.get("exitCode") != 0) {
+            properties.put(new java.lang.String("Status"), new java.lang.String("Failure"));
+        }
+        else {
+            properties.put("Status", "Success");
+        }
+     ]]></post-processing>
+    <command program="${GROOVY_HOME}/bin/groovy">
+      <arg value='-cp' />
+      <arg path='classes:${sdkJar}:lib/appengine-api-1.0-sdk-1.3.8.jar:lib/commons-beanutils-1.8.0.jar:lib/commons-codec-1.6.jar:lib/commons-collections-3.2.1.jar:lib/commons-lang-2.4.jar:lib/commons-logging-1.1.1.jar:lib/ezmorph-1.0.6.jar:lib/http-builder-0.7.jar:lib/httpclient-4.2.1.jar:lib/httpcore-4.2.1.jar:lib/json-lib-2.3-jdk15.jar:lib/nekohtml-1.9.16.jar:lib/signpost-commonshttp4-1.2.1.1.jar:lib/signpost-core-1.2.1.1.jar:lib/xercesImpl-2.9.1.jar:lib/xml-apis-1.4.01.jar:lib/xml-resolver-1.2.jar' />
+      <arg file="createPublishedService.groovy"/>
+      <arg file="${PLUGIN_INPUT_PROPS}"/>
+      <arg file="${PLUGIN_OUTPUT_PROPS}"/>
+    </command>
+  </step-type>
+  <step-type name="List Published Service for VM">
+    <description>List a Published Service for the Specified VM</description>
+    <properties>
+      <property name="configID" required="true">
+        <property-ui type="textBox"
+                     label="Environment ID"
+		     default-value="${p:Create Environment from Template/configID}"
+                     description="The numerical Environment ID of the IDTES environment that contains the VM for which to get the Published Service"/>
+      </property>
+      <property name="vmName" required="true">
+        <property-ui type="textBox"
+                     label="VM Name"
+                     description="The Name of the VM in the IDTES environment for which the Published Service is to be listed"/>
+      </property>
+      <property name="networkName" required="true">
+        <property-ui type="textBox"
+                     label="Network Name"
+                     description="The Name of the Network in the Specified VM that is associated with the Published Service"/>
+      </property>
+      <property name="portNumber" required="true">
+        <property-ui type="textBox"
+                     label="Port Number"
+                     description="The Port that is assocated with the Published Service"/>
+      </property>
+      <property name="username" required="true">
+        <property-ui type="textBox"
+                     label="Username"
+		     default-value="${p:IDTES Authentication/username}"
+                     description="IDTES User ID."/>
+      </property>
+      <property name="password" required="true">
+        <property-ui type="textBox"
+                     label="Authentication Key"
+		     default-value="${p:IDTES Authentication/password}"
+                     description="IDTES Authentication Key."/>
+      </property>
+    </properties>
+    <post-processing><![CDATA[
+        if (properties.get("exitCode") != 0) {
+            properties.put(new java.lang.String("Status"), new java.lang.String("Failure"));
+        }
+        else {
+            properties.put("Status", "Success");
+        }
+     ]]></post-processing>
+    <command program="${GROOVY_HOME}/bin/groovy">
+      <arg value='-cp' />
+      <arg path='classes:${sdkJar}:lib/appengine-api-1.0-sdk-1.3.8.jar:lib/commons-beanutils-1.8.0.jar:lib/commons-codec-1.6.jar:lib/commons-collections-3.2.1.jar:lib/commons-lang-2.4.jar:lib/commons-logging-1.1.1.jar:lib/ezmorph-1.0.6.jar:lib/http-builder-0.7.jar:lib/httpclient-4.2.1.jar:lib/httpcore-4.2.1.jar:lib/json-lib-2.3-jdk15.jar:lib/nekohtml-1.9.16.jar:lib/signpost-commonshttp4-1.2.1.1.jar:lib/signpost-core-1.2.1.1.jar:lib/xercesImpl-2.9.1.jar:lib/xml-apis-1.4.01.jar:lib/xml-resolver-1.2.jar' />
+      <arg file="listPublishedService.groovy"/>
+      <arg file="${PLUGIN_INPUT_PROPS}"/>
+      <arg file="${PLUGIN_OUTPUT_PROPS}"/>
+    </command>
+  </step-type>
+</plugin>
